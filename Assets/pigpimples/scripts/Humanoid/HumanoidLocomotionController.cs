@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,10 @@ using UnityEngine;
 public class HumanoidLocomotionController : MonoBehaviour
 {
     private float m_baseSpeed = 80.0f;
+    private float m_sprintSpeed = 120.0f;
     private float m_baseRotationSpeed = 4000f;
+    private float m_jumpHeight = 5f;
+    public bool isSprinting = false;
     private Rigidbody m_rigidBody;
 
     // Start is called before the first frame update
@@ -24,7 +28,7 @@ public class HumanoidLocomotionController : MonoBehaviour
     {
         // Literally move the humanoid
         Vector3 curPos = transform.position;
-        float speedMultiplier = (m_baseSpeed * Time.deltaTime);
+        float speedMultiplier = ((isSprinting ? m_sprintSpeed : m_baseSpeed) * Time.deltaTime);
         Vector3 newPos = curPos + (direction * speedMultiplier);
         m_rigidBody.MovePosition(newPos);
 
@@ -38,5 +42,10 @@ public class HumanoidLocomotionController : MonoBehaviour
                 transform.rotation, 
                 Quaternion.LookRotation(direction), 
             (Time.deltaTime * m_baseRotationSpeed));
+    }
+
+    public void Jump()
+    {
+        m_rigidBody.AddForce(new Vector3(0, m_jumpHeight, 0), ForceMode.Impulse);
     }
 }
