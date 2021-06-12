@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7390020739082480579}
   - component: {fileID: 7390020739082480576}
   m_Layer: 0
-  m_Name: SplineCamera
+  m_Name: MixedGameCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
