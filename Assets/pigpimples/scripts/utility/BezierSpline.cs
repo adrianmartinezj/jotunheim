@@ -237,7 +237,7 @@ public class BezierSpline : MonoBehaviour
 		points[enforcedIndex] = middle + enforcedTangent;
 	}
 
-	public Vector3 GetClosestPointOnSplineToPosition(int iterations, int slices, Vector3 point, float t0, float t1)
+	public Vector3 GetClosestPointOnSplineToPosition(int iterations, int slices, Vector3 point, float t0, float t1, out float tOut)
     {
 		float sliceDist = (t1 - t0) / (float)slices;
 		float tc0 = t0, tc1 = t1;
@@ -263,15 +263,17 @@ public class BezierSpline : MonoBehaviour
 
         }
 
+		tOut = tc0;
         if (iterations == 1)
-        {
+		{
 			// return closest t
+			Debug.DrawLine(point, GetPoint(tc0), Color.red, 10);
 			return GetPoint(tc0);
-        }
+		}
 		else
         {
 			// use closest and 2nd closest t
-			return GetClosestPointOnSplineToPosition(iterations - 1, slices, point, tc0, tc1);
+			return GetClosestPointOnSplineToPosition(iterations - 1, slices, point, tc0, tc1, out tOut);
         }
     }
 

@@ -25,9 +25,10 @@ public class MixedGameCamera : MonoBehaviour
 
     [SerializeField]
     private float CAMERA_FOLLOW_SPEED = 2.0f;
+    private float CAMERA_FOLLOW_SPLINE_SPEED = 1.0f;
     private float CAMERA_ROTATE_SPEED = 2.0f;
-    private float CAMERA_SPLINE_DISTANCE_TOLERANCE = 10f;
     private Vector3 m_cameraOffset = new Vector3(0, 25, -20);
+    private Vector3 m_cameraRotationOffset = new Vector3(55, 0, 0);
     private BezierSpline m_cameraSpline = null;
     private GameCameraMode m_mode = GameCameraMode.Game;
     private GameObject[] m_players;
@@ -60,21 +61,37 @@ public class MixedGameCamera : MonoBehaviour
                     avgPlayerPosition + m_cameraOffset, 
                     Time.deltaTime * CAMERA_FOLLOW_SPEED);
             }
+            if (transform.rotation != Quaternion.Euler(m_cameraRotationOffset))
+            {
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    Quaternion.Euler(m_cameraRotationOffset),
+                    Time.deltaTime * CAMERA_ROTATE_SPEED
+                );
+            }
         }
         else if (mode == GameCameraMode.Cinematic)
         {
+            //Vector3 closestPointOnSpline = m_cameraSpline.GetClosestPointOnSplineToPosition(4, 5, GetAveragePlayerPosition(), 0, 1, out float tOut);
             // If we're not within a certain distance tolerance, move towards spline
-            if (Vector3.Distance(transform.position, m_cameraSpline.GetPoint(0f)) > CAMERA_SPLINE_DISTANCE_TOLERANCE)
-            {
-                transform.position = Vector3.Slerp(transform.position, m_cameraSpline.GetPoint(0f), Time.deltaTime * CAMERA_FOLLOW_SPEED);
-            }
-            else
-            {
-                transform.position = Vector3.Slerp(
-                    transform.position, 
-                    m_cameraSpline.GetClosestPointOnSplineToPosition(2, 4, GetAveragePlayerPosition(), 0, 1),
-                    Time.deltaTime * CAMERA_FOLLOW_SPEED);
-            }
+            //print("~WE'RE NOT IN THE SPLINE~");
+            //transform.position = Vector3.Slerp(transform.position, closestPointOnSpline, Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
+
+            // Instead of trying to grab the closest point on the spline,
+            // try maintaining a certain distance from the avg player position.
+            // While that number is below a certain threshold, increment the t value 
+            // along the spline proportional to the difference between the current position distance
+            // and the threshold.
+            //transform.position = Vector3.Slerp(transform.position, closestPointOnSpline, Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
+            
+            //else
+            //{
+            //    print("~WE'RE IN THE SPLINE~");
+            //    transform.position = Vector3.Slerp(
+            //        transform.position, 
+            //        ,
+            //        Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
+            //}
             // Move along spline based on players' progress along the spline
             // Look at player
             transform.rotation = Quaternion.Slerp(
