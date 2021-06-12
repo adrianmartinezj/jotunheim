@@ -237,4 +237,42 @@ public class BezierSpline : MonoBehaviour
 		points[enforcedIndex] = middle + enforcedTangent;
 	}
 
+	public Vector3 GetClosestPointOnSplineToPosition(int iterations, int slices, Vector3 point, float t0, float t1)
+    {
+		float sliceDist = (t1 - t0) / (float)slices;
+		float tc0 = t0, tc1 = t1;
+		float d0 = Vector3.Distance(GetPoint(t0), point);
+		float d1 = Vector3.Distance(GetPoint(t1), point);
+        for (int i = 0; i < slices; i++)
+        {
+			// take t0, increment t0 by slices * sliceDist
+			// see if tN is closest to the point, if it is, save, else check second closest, else discard
+			var tN = t0 + (i * sliceDist);
+			var newPoint = GetPoint(tN);
+			var dN = Vector3.Distance(newPoint, point);
+			if (dN < d0)
+			{
+				d0 = dN;
+				tc0 = tN;
+            }
+			else if (dN < d1)
+			{
+				d1 = dN;
+				tc1 = tN;
+            }
+
+        }
+
+        if (iterations == 1)
+        {
+			// return closest t
+			return GetPoint(tc0);
+        }
+		else
+        {
+			// use closest and 2nd closest t
+			return GetClosestPointOnSplineToPosition(iterations - 1, slices, point, tc0, tc1);
+        }
+    }
+
 }
