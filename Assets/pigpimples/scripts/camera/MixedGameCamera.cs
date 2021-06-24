@@ -27,6 +27,8 @@ public class MixedGameCamera : MonoBehaviour
     private float CAMERA_FOLLOW_SPEED = 2.0f;
     private float CAMERA_FOLLOW_SPLINE_SPEED = 1.0f;
     private float CAMERA_ROTATE_SPEED = 2.0f;
+    private float CURVE_PROGRESS_CONSTANT = 0.1f;
+    private float m_prevCurveProgress = 0.0f;
     private Vector3 m_cameraOffset = new Vector3(0, 25, -20);
     private Vector3 m_cameraRotationOffset = new Vector3(55, 0, 0);
     private BezierSpline m_cameraSpline = null;
@@ -75,7 +77,32 @@ public class MixedGameCamera : MonoBehaviour
             //Vector3 closestPointOnSpline = m_cameraSpline.GetClosestPointOnSplineToPosition(4, 5, GetAveragePlayerPosition(), 0, 1, out float tOut);
             // If we're not within a certain distance tolerance, move towards spline
             //print("~WE'RE NOT IN THE SPLINE~");
-            //transform.position = Vector3.Slerp(transform.position, closestPointOnSpline, Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
+            Vector3 avgPlayerPos = GetAveragePlayerPosition();
+            float prevProg = m_prevCurveProgress - CURVE_PROGRESS_CONSTANT,
+                nextProg = m_prevCurveProgress + CURVE_PROGRESS_CONSTANT;
+            Vector3 closestPointOnSpline = m_cameraSpline.GetPoint(m_prevCurveProgress),
+                prevPoint = m_cameraSpline.GetPoint(Mathf.Clamp(prevProg, 0, 1)),
+                nextPoint = m_cameraSpline.GetPoint(Mathf.Clamp(nextProg, 0, 1));
+            float curDist = Vector3.Distance(avgPlayerPos, closestPointOnSpline),
+                prevDist = Vector3.Distance(avgPlayerPos, prevPoint),
+                nextDist = Vector3.Distance(avgPlayerPos, nextPoint);
+
+
+            if (nextDist < curDist)
+            {
+                closestPointOnSpline = nextPoint;
+                m_prevCurveProgress = nextProg;
+            }
+            else if (prevDist < curDist)
+            {
+                closestPointOnSpline = prevPoint;
+                m_prevCurveProgress = prevProg;
+            }
+
+            transform.position = Vector3.Slerp(
+                transform.position, 
+                closestPointOnSpline, 
+                Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
 
             // Instead of trying to grab the closest point on the spline,
             // try maintaining a certain distance from the avg player position.
@@ -83,7 +110,7 @@ public class MixedGameCamera : MonoBehaviour
             // along the spline proportional to the difference between the current position distance
             // and the threshold.
             //transform.position = Vector3.Slerp(transform.position, closestPointOnSpline, Time.deltaTime * CAMERA_FOLLOW_SPLINE_SPEED);
-            
+
             //else
             //{
             //    print("~WE'RE IN THE SPLINE~");
